@@ -1,0 +1,16 @@
+package com.friendbook.user;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+@Data
+@Getter
+@Setter
+public class UserLoginRequestDTO {
+	@NotBlank
+	private String userName;
+	@NotBlank
+	private String password;
+}
