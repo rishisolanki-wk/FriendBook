@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.friendbook.posts.PostService;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -14,6 +16,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
+	private final PostService postService;
 
 	public void registerUser(UserRegisterRequestDTO requestDTO) {
 		if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
@@ -48,6 +51,7 @@ public class UserService {
 		dto.setFirstName(user.getFirstName());
 		dto.setLastName(user.getLastName());
 		dto.setCreatedAt(user.getCreatedAt());
+		dto.setPosts(postService.getPostByUserId(user.getUserId()));
 		return dto;
 	}
 }
