@@ -17,17 +17,19 @@ public class CloudinaryService {
 
 	private final Cloudinary cloudinary;
 
-	public String uploadImage(MultipartFile file) {
+	public CloudinaryUploadResult uploadImage(MultipartFile file) {
 
 		try {
 
 			Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(),
 					ObjectUtils.asMap("resource_type", "image"));
-
-			return result.get("secure_url").toString();
-
+			return new CloudinaryUploadResult(result.get("secure_url").toString(), result.get("public_id").toString());
 		} catch (IOException e) {
 			throw new RuntimeException("Image upload failed", e);
 		}
+	}
+
+	public void deletePost(Post post) throws IOException {
+		cloudinary.uploader().destroy(post.getImagePublicId(), ObjectUtils.emptyMap());
 	}
 }

@@ -1,5 +1,6 @@
 package com.friendbook.posts;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,17 +21,19 @@ public class PostService {
 
 	public String createPost(CreatePostRequestDTO createPostRequestDTO, User user) {
 		try {
+			CloudinaryUploadResult uploadResult = cloudinaryService.uploadImage(createPostRequestDTO.getImage());
 			Post post = new Post();
 			post.setCaption(createPostRequestDTO.getCaption());
 			post.setCreatedAt(LocalDateTime.now());
 			post.setUpdatedAt(LocalDateTime.now());
 			post.setUser(user);
-			post.setImageUrl(cloudinaryService.uploadImage(createPostRequestDTO.getImage()));
+			post.setImageUrl(uploadResult.getImageUrl());
+			post.setImagePublicId(uploadResult.getImagePublicId());
 			postRepository.save(post);
 			return "Image Uploaded Successfully";
 		} catch (Exception ex) {
 			System.out.println(ex.getMessage());
-			return null;
+			return "Image Not Uploaded!";
 		}
 	}
 
@@ -48,6 +51,7 @@ public class PostService {
 			dto.setCaption(post.getCaption());
 			dto.setImageUrl(post.getImageUrl());
 			dto.setPostId(post.getPostId());
+			dto.setImagePublicId(post.getImagePublicId());
 			dto.setUpdatedAt(post.getUpdatedAt());
 			dtos.add(dto);
 		}
@@ -58,6 +62,15 @@ public class PostService {
 		UserFeedPostsDTO dto = new UserFeedPostsDTO();
 		dto.setPosts(postResponseMapper(postRepository.findAll()));
 		return dto;
+	}
+
+	public void deletePostById(Long id, User user) throws IOException {
+		Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post Not Found"));
+		if (post.getUser().getUserId() != user.getUserId()) {
+			throw new RuntimeException("Not Authorized to delete the post!");
+		}
+		cloudinaryService.deletePost(post);
+		postRepository.delete(post);
 	}
 
 }

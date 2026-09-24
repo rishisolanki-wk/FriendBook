@@ -10,5 +10,6 @@ public class PostResponseDTO {
 	private Long postId;
 	private String caption;
 	private String imageUrl;
+	private String imagePublicId;
 	private LocalDateTime updatedAt;
 }

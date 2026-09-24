@@ -3,7 +3,9 @@ package com.friendbook.posts;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,5 +27,16 @@ public class PostController {
 		User user = (User) authentication.getPrincipal();
 		return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(createPostRequestDTO, user));
 
+	}
+
+	@DeleteMapping("/delete-post/{id}")
+	public ResponseEntity<String> deletePost(@PathVariable("id") Long id, Authentication authentication) {
+		try {
+			User user = (User) authentication.getPrincipal();
+			postService.deletePostById(id, user);
+			return ResponseEntity.status(HttpStatus.OK).body("Post Deleted Successfully");
+		} catch (Exception ex) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Post Not Deleted");
+		}
 	}
 }

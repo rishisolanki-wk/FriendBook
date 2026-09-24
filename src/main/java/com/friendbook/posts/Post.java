@@ -27,6 +27,9 @@ public class Post {
 	private String caption;
 
 	@Column(nullable = false)
+	private String imagePublicId;
+
+	@Column(nullable = false)
 	private String imageUrl;
 
 	private LocalDateTime createdAt;
