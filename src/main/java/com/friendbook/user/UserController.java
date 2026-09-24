@@ -31,8 +31,8 @@ public class UserController {
 
 	@GetMapping("/profile")
 	public ResponseEntity<UserProfileResponseDTO> getProfile(Authentication authentication) {
-		String userName = authentication.getName();
-		UserProfileResponseDTO userProfileResponseDTO = userService.getUserByUserName(userName);
+		User user = (User) authentication.getPrincipal();
+		UserProfileResponseDTO userProfileResponseDTO = userService.getUserByUserName(user.getUserName());
 		if (userProfileResponseDTO == null)
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		return ResponseEntity.status(HttpStatus.OK).body(userProfileResponseDTO);
