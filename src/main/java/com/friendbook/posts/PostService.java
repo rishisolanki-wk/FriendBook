@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.friendbook.user.User;
+import com.friendbook.user.UserFeedPostsDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -52,4 +53,11 @@ public class PostService {
 		}
 		return dtos;
 	}
+
+	public UserFeedPostsDTO getFeedPosts() {
+		UserFeedPostsDTO dto = new UserFeedPostsDTO();
+		dto.setPosts(postResponseMapper(postRepository.findAll()));
+		return dto;
+	}
+
 }

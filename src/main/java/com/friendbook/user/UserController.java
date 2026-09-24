@@ -37,4 +37,9 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		return ResponseEntity.status(HttpStatus.OK).body(userProfileResponseDTO);
 	}
+
+	@GetMapping("/home") // getting all the posts for now
+	public ResponseEntity<UserFeedPostsDTO> getUserFeedPosts() {
+		return ResponseEntity.status(HttpStatus.OK).body(userService.getFeedPosts());
+	}
 }

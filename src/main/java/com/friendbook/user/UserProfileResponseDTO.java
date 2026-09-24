@@ -3,7 +3,6 @@ package com.friendbook.user;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.friendbook.posts.Post;
 import com.friendbook.posts.PostResponseDTO;
 
 import lombok.Data;

@@ -7,6 +7,5 @@ import lombok.Data;
 @Data
 public class CreatePostRequestDTO {
 	private String caption;
-
 	private MultipartFile image;
 }

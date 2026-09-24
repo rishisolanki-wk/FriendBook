@@ -54,4 +54,8 @@ public class UserService {
 		dto.setPosts(postService.getPostByUserId(user.getUserId()));
 		return dto;
 	}
+
+	public UserFeedPostsDTO getFeedPosts() {
+		return postService.getFeedPosts();
+	}
 }
