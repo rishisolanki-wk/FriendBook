@@ -1,19 +1,36 @@
 package com.friendbook.auth;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import com.friendbook.user.UserRepository;
+import com.friendbook.user.User;
+import com.friendbook.user.UserLoginRequestDTO;
+import com.friendbook.user.UserLoginResponseDTO;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Data
 @RequiredArgsConstructor
 public class AuthService {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
+	private final AuthenticationManager authenticationManager;
+	private final AuthUtils authUtils;
+
+	public UserLoginResponseDTO loginRequest(UserLoginRequestDTO requestDTO) {
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(requestDTO.getUserNameOrEmail(), requestDTO.getPassword()));
+		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
+
+		User user = principal.getUser();
+
+		String token = authUtils.generateAccessToken(user);
+		UserLoginResponseDTO responseDTO = new UserLoginResponseDTO();
+		responseDTO.setJwt(token);
+		responseDTO.setEmail(user.getEmail());
+		responseDTO.setName(user.getUserName());
+		return responseDTO;
+	}
 
 }

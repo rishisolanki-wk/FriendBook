@@ -1,5 +1,9 @@
 package com.friendbook.user;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,12 +20,21 @@ public class UserController {
 	private final UserService userService;
 
 	@PostMapping("/register")
-	public String registerUser(@Valid @RequestBody UserRegisterRequestDTO requestDTO) {
+	public ResponseEntity<String> registerUser(@Valid @RequestBody UserRegisterRequestDTO requestDTO) {
 		try {
 			userService.registerUser(requestDTO);
 		} catch (Exception ex) {
-			return ex.getMessage();
+			return ResponseEntity.status(HttpStatus.CONFLICT).body("User not registered : " + ex.getMessage());
 		}
-		return "Registered Successfuly";
+		return ResponseEntity.status(HttpStatus.CREATED).body("Registered Successfuly");
+	}
+
+	@GetMapping("/profile")
+	public ResponseEntity<UserProfileResponseDTO> getProfile(Authentication authentication) {
+		String userName = authentication.getName();
+		UserProfileResponseDTO userProfileResponseDTO = userService.getUserByUserName(userName);
+		if (userProfileResponseDTO == null)
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+		return ResponseEntity.status(HttpStatus.OK).body(userProfileResponseDTO);
 	}
 }

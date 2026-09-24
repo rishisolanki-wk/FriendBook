@@ -2,6 +2,7 @@ package com.friendbook.user;
 
 import java.time.LocalDate;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -34,5 +35,19 @@ public class UserService {
 		user.setFirstName(requestDTO.getFirstName());
 		user.setLastName(requestDTO.getLastName());
 		return user;
+	}
+
+	public UserProfileResponseDTO getUserByUserName(String userName) {
+		User user = userRepository.findByUserName(userName)
+				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+		UserProfileResponseDTO dto = new UserProfileResponseDTO();
+		dto.setEmail(user.getEmail());
+		dto.setGender(user.getGender());
+		dto.setMobile(user.getMobile());
+		dto.setUserName(user.getUserName());
+		dto.setFirstName(user.getFirstName());
+		dto.setLastName(user.getLastName());
+		dto.setCreatedAt(user.getCreatedAt());
+		return dto;
 	}
 }
