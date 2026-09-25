@@ -55,7 +55,7 @@ public class UserService {
 		return dto;
 	}
 
-	public UserFeedPostsDTO getFeedPosts() {
-		return postService.getFeedPosts();
+	public UserFeedPostsDTO getFeedPosts(User user) {
+		return postService.getFeedPosts(user.getUserId());
 	}
 }

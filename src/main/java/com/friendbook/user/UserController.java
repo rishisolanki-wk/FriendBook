@@ -39,7 +39,8 @@ public class UserController {
 	}
 
 	@GetMapping("/home") // getting all the posts for now
-	public ResponseEntity<UserFeedPostsDTO> getUserFeedPosts() {
-		return ResponseEntity.status(HttpStatus.OK).body(userService.getFeedPosts());
+	public ResponseEntity<UserFeedPostsDTO> getUserFeedPosts(Authentication authentication) {
+		User user = (User) authentication.getPrincipal();
+		return ResponseEntity.status(HttpStatus.OK).body(userService.getFeedPosts(user));
 	}
 }

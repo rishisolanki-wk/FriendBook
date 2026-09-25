@@ -10,6 +10,7 @@ public class PostResponseDTO {
 	private Long postId;
 	private String caption;
 	private String imageUrl;
-	private String imagePublicId;
+	private Long likeCount;
+	private boolean isLiked;
 	private LocalDateTime updatedAt;
 }
