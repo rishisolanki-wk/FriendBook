@@ -1,6 +1,7 @@
 package com.friendbook.likes;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,15 @@ public class PostLikeService {
 
 	public Long getPostLikeCountByPostId(Long postId) {
 		return postLikeRepo.countByPost_PostId(postId);
+	}
+
+	public ViewPostLikesDTO getAllPostLikedBy(Long postId) {
+		List<String> userNames = postLikeRepo.findUserNamesByPostId(postId);
+		ViewPostLikesDTO viewPostLikesDTO = new ViewPostLikesDTO();
+		viewPostLikesDTO.setUserName(userNames);
+		viewPostLikesDTO.setPostId(postId);
+		viewPostLikesDTO.setCount((long) userNames.size());
+		return viewPostLikesDTO;
 	}
 
 }

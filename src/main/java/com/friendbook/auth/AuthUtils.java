@@ -27,7 +27,7 @@ public class AuthUtils {
 	@SuppressWarnings("deprecation")
 	public String generateAccessToken(User user) {
 		return Jwts.builder().setSubject(user.getUserName()).claim("userId", user.getUserId().toString())
-				.issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 10))
+				.issuedAt(new Date()).expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 5))
 				.signWith(getSecretKey()).compact();
 	}
 

@@ -1,6 +1,9 @@
 package com.friendbook.likes;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.friendbook.posts.Post;
 import com.friendbook.user.User;
@@ -14,5 +17,12 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 	boolean existsByUser_UserIdAndPost_PostId(Long userId, Long postId);
 
 	void deleteByPost_PostId(Long id);
+
+	@Query("""
+			    SELECT pl.user.userName
+			    FROM PostLike pl
+			    WHERE pl.post.postId = :postId
+			""")
+	List<String> findUserNamesByPostId(Long postId);
 
 }

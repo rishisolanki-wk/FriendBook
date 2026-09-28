@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +32,11 @@ public class PostLikeController {
 		User user = (User) authentication.getPrincipal();
 		postLikeService.unlikePost(postId, user);
 		return ResponseEntity.status(HttpStatus.OK).body("Like Removed Successfully");
+	}
+
+	@GetMapping("/view-likes/{postId}")
+	public ResponseEntity<ViewPostLikesDTO> getAllPostLikedBy(@PathVariable("postId") Long postId) {
+		
+		return ResponseEntity.status(HttpStatus.OK).body(postLikeService.getAllPostLikedBy(postId));
 	}
 }
