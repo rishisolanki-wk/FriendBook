@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.friendbook.follow.FollowRepository;
+import com.friendbook.follow.FollowStatus;
 import com.friendbook.posts.CloudinaryService;
 import com.friendbook.posts.CloudinaryUploadResult;
 import com.friendbook.posts.PostResponseDTO;
@@ -66,8 +67,8 @@ public class UserService {
 		dto.setPosts(postService.getPostByUserId(user.getUserId()));
 		dto.setProfileBio(user.getProfileBio());
 		dto.setProfileImage(user.getProfileImage());
-		dto.setFollowers(followRepository.countByFollowing_UserId(user.getUserId()));
-		dto.setFollowings(followRepository.countByFollower_UserId(user.getUserId()));
+		dto.setFollowers(followRepository.countByFollowing_UserIdAndStatus(user.getUserId(), FollowStatus.ACCEPTED));
+		dto.setFollowings(followRepository.countByFollower_UserIdAndStatus(user.getUserId(), FollowStatus.ACCEPTED));
 		return dto;
 	}
 
@@ -100,8 +101,9 @@ public class UserService {
 	public PublicProfileViewDTO getPublicProfileViewById(Long userId) {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-		long followerCount = followRepository.countByFollower_UserId(user.getUserId());
-		long followingCount = followRepository.countByFollowing_UserId(user.getUserId());
+		long followerCount = followRepository.countByFollower_UserIdAndStatus(user.getUserId(), FollowStatus.ACCEPTED);
+		long followingCount = followRepository.countByFollowing_UserIdAndStatus(user.getUserId(),
+				FollowStatus.ACCEPTED);
 		if (!user.isActiveStatus() || user.getAccountStatus() == AccountStatus.BLOCKED) {
 			throw new IllegalArgumentException("Account unavailable");
 		}
