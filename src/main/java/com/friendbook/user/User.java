@@ -46,6 +46,11 @@ public class User {
 	@NotNull
 	private Gender gender;
 
+	private String profileImage;
+
+	private String profileBio;
+	private String imagePublicId;
+
 	private LocalDate createdAt;
 
 	private boolean activeStatus;

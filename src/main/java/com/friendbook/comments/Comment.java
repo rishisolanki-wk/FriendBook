@@ -36,6 +36,4 @@ public class Comment {
 	private Post post;
 
 	private LocalDateTime createdAt;
-
-	private LocalDateTime updatedAt;
 }

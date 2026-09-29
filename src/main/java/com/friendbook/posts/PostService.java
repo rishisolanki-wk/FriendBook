@@ -1,5 +1,6 @@
 package com.friendbook.posts;
 
+import com.friendbook.comments.CommentRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,12 +12,14 @@ import com.friendbook.likes.PostLikeRepository;
 import com.friendbook.user.User;
 import com.friendbook.user.UserFeedPostsDTO;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
+	private final CommentRepository commentRepository;
 	private final PostRepository postRepository;
 	private final CloudinaryService cloudinaryService;
 	private final PostLikeRepository postLikeRepository;
@@ -68,14 +71,18 @@ public class PostService {
 		return dto;
 	}
 
+	@Transactional
 	public void deletePostById(Long id, User user) throws IOException {
+		System.out.println("Deleting post: " + id);
 		Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post Not Found"));
 		if (!post.getUser().getUserId().equals(user.getUserId())) {
 			throw new RuntimeException("Not Authorized to delete the post!");
 		}
-		cloudinaryService.deletePost(post);
+
 		postLikeRepository.deleteByPost_PostId(id);
+		commentRepository.deleteByPost_PostId(id);
 		postRepository.delete(post);
+		cloudinaryService.deletePost(post);
 	}
 
 	public void updatePostCaption(Long id, User user, UpdatePostRequestDTO dto) {

@@ -17,5 +17,7 @@ public class UserProfileResponseDTO {
 	private String mobile;
 	private Gender gender;
 	private List<PostResponseDTO> posts;
+	private String profileImage;
+	private String profileBio;
 	private LocalDate createdAt;
 }
