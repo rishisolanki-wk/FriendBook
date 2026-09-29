@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,4 +62,10 @@ public class UserController {
 	public ResponseEntity<List<UserProfileSearchResponseDTO>> searchUsers(@RequestParam String keyword) {
 		return ResponseEntity.ok(userService.searchUsers(keyword));
 	}
+
+	@GetMapping("/profile/public-view/{userId}")
+	public ResponseEntity<PublicProfileViewDTO> publicProfileView(@PathVariable("userId") Long userId) {
+		return ResponseEntity.ok(userService.getPublicProfileViewById(userId));
+	}
+
 }

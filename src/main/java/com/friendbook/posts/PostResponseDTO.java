@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 public class PostResponseDTO {
-
 	private Long postId;
 	private String caption;
 	private String imageUrl;

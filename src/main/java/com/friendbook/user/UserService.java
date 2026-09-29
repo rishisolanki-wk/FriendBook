@@ -1,15 +1,17 @@
 package com.friendbook.user;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.friendbook.follow.FollowRepository;
 import com.friendbook.posts.CloudinaryService;
 import com.friendbook.posts.CloudinaryUploadResult;
+import com.friendbook.posts.PostResponseDTO;
 import com.friendbook.posts.PostService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class UserService {
 	private final PasswordEncoder passwordEncoder;
 	private final PostService postService;
 	private final CloudinaryService cloudinaryService;
+	private final FollowRepository followRepository;
 
 	public void registerUser(UserRegisterRequestDTO requestDTO) {
 		if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
@@ -45,6 +48,7 @@ public class UserService {
 		user.setProfileBio("New Account!");
 		user.setProfileImage("https://res.cloudinary.com/wcpxca8k/image/upload/v1790620003/default_user_img.avif");
 		user.setImagePublicId("default_user_img");
+		user.setAccountStatus(AccountStatus.PUBLIC);
 		return user;
 	}
 
@@ -62,6 +66,8 @@ public class UserService {
 		dto.setPosts(postService.getPostByUserId(user.getUserId()));
 		dto.setProfileBio(user.getProfileBio());
 		dto.setProfileImage(user.getProfileImage());
+		dto.setFollowers(followRepository.countByFollowing_UserId(user.getUserId()));
+		dto.setFollowings(followRepository.countByFollower_UserId(user.getUserId()));
 		return dto;
 	}
 
@@ -74,6 +80,8 @@ public class UserService {
 				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 		if (editRequestDTO.getProfileBio() != null)
 			user.setProfileBio(editRequestDTO.getProfileBio());
+		if (!editRequestDTO.getAccountStatus().equals(user.getAccountStatus()))
+			user.setAccountStatus(editRequestDTO.getAccountStatus());
 		if (editRequestDTO.getProfileImage() != null) {
 			CloudinaryUploadResult uploadResult = cloudinaryService.uploadImage(editRequestDTO.getProfileImage());
 			user.setProfileImage(uploadResult.getImageUrl());
@@ -87,5 +95,27 @@ public class UserService {
 				.map(user -> new UserProfileSearchResponseDTO(user.getUserId(), user.getUserName(), user.getFirstName(),
 						user.getLastName(), user.getProfileImage()))
 				.toList();
+	}
+
+	public PublicProfileViewDTO getPublicProfileViewById(Long userId) {
+
+		User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+		long followerCount = followRepository.countByFollower_UserId(user.getUserId());
+		long followingCount = followRepository.countByFollowing_UserId(user.getUserId());
+		if (!user.isActiveStatus() || user.getAccountStatus() == AccountStatus.BLOCKED) {
+			throw new IllegalArgumentException("Account unavailable");
+		}
+
+		List<PostResponseDTO> posts = new ArrayList<>();
+
+		if (user.getAccountStatus() == AccountStatus.PUBLIC) {
+			posts = postService.getPostByUserId(user.getUserId());
+		} else {
+			posts = null;
+
+		}
+		return new PublicProfileViewDTO(user.getUserId(), user.getUserName(), user.getFirstName(), user.getLastName(),
+				user.getProfileImage(), user.getProfileBio(), user.isActiveStatus(), user.getAccountStatus(), posts,
+				followingCount, followerCount);
 	}
 }

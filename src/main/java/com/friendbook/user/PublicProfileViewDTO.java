@@ -1,25 +1,24 @@
 package com.friendbook.user;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import com.friendbook.posts.PostResponseDTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-public class UserProfileResponseDTO {
-
+@AllArgsConstructor
+public class PublicProfileViewDTO {
+	private Long userId;
 	private String userName;
 	private String firstName;
 	private String lastName;
-	private String email;
-	private String mobile;
-	private Gender gender;
-	private List<PostResponseDTO> posts;
 	private String profileImage;
 	private String profileBio;
-	private LocalDate createdAt;
+	private boolean activeStatus;
+	private AccountStatus accountStatus;
+	private List<PostResponseDTO> posts;
 	private Long followers;
 	private Long followings;
 }
