@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.friendbook.notifications.NotificationService;
+import com.friendbook.notifications.NotificationType;
 import com.friendbook.posts.Post;
 import com.friendbook.posts.PostRepository;
 import com.friendbook.user.User;
@@ -18,6 +20,7 @@ public class CommentService {
 
 	private final CommentRepository commentRepository;
 	private final PostRepository postRepository;
+	private final NotificationService notificationService;
 
 	public void addCommentByPostId(Long postId, CommentRequestDTO commentRequestDTO, User user) {
 		if (commentRepository.existsByUser_UserIdAndPost_PostId(user.getUserId(), postId)) {
@@ -30,6 +33,7 @@ public class CommentService {
 		comment.setPost(post);
 		comment.setUser(user);
 		commentRepository.save(comment);
+		notificationService.createNotification(post.getUser(), user, NotificationType.COMMENT, post);
 	}
 
 	public List<CommentResponseDTO> getCommentsByPostId(Long postId) {

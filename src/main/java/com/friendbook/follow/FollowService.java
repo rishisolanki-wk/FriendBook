@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.friendbook.notifications.NotificationService;
+import com.friendbook.notifications.NotificationType;
 import com.friendbook.user.AccountStatus;
 import com.friendbook.user.User;
 import com.friendbook.user.UserProfileSearchResponseDTO;
@@ -20,6 +22,7 @@ public class FollowService {
 
 	private final FollowRepository followRepository;
 	private final UserRepository userRepository;
+	private final NotificationService notificationService;
 
 	@Transactional
 	public String followUserRequest(Long toId, User fromUser) {
@@ -42,13 +45,13 @@ public class FollowService {
 
 		if (followingUser.getAccountStatus() == AccountStatus.PRIVATE) {
 			follow.setStatus(FollowStatus.PENDING);
-			// Create notification for followingUser
+			notificationService.createNotification(followingUser, fromUser, NotificationType.FOLLOW_REQUEST, null);
 		} else {
 			follow.setStatus(FollowStatus.ACCEPTED);
+			notificationService.createNotification(followingUser, fromUser, NotificationType.FOLLOW, null);
 		}
 
 		followRepository.save(follow);
-
 		return followingUser.getAccountStatus() == AccountStatus.PRIVATE ? "Follow request sent"
 				: "Followed successfully";
 	}
@@ -104,11 +107,13 @@ public class FollowService {
 				currentUser.getUserId(), FollowStatus.PENDING)
 				.orElseThrow(() -> new RuntimeException("Pending request not found"));
 
+		User recipient = userRepository.findById(followerId)
+				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 		if (isAccepted) {
 			follow.setStatus(FollowStatus.ACCEPTED);
+			notificationService.createNotification(recipient, currentUser, NotificationType.FOLLOW_ACCEPTED, null);
 			return "Follow request accepted";
 		}
-
 		follow.setStatus(FollowStatus.REJECTED);
 		return "Follow request rejected";
 	}
