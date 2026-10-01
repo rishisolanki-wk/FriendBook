@@ -2,6 +2,7 @@ package com.friendbook.user;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.friendbook.posts.PostResponseDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,10 +47,11 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).body(userProfileResponseDTO);
 	}
 
-	@GetMapping("/home") // getting all the posts for now
-	public ResponseEntity<UserFeedPostsDTO> getUserFeedPosts(Authentication authentication) {
+	@GetMapping("/home/{page}/{size}") // getting all the posts for now
+	public ResponseEntity<Page<PostResponseDTO>> getUserFeedPosts(@PathVariable("page") int page,
+			@PathVariable("size") int size, Authentication authentication) {
 		User user = (User) authentication.getPrincipal();
-		return ResponseEntity.status(HttpStatus.OK).body(userService.getFeedPosts(user));
+		return ResponseEntity.status(HttpStatus.OK).body(userService.getFeedPosts(user, page, size));
 	}
 
 	@PutMapping("/profile/edit")

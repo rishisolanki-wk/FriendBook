@@ -1,16 +1,21 @@
 package com.friendbook.posts;
 
 import com.friendbook.comments.CommentRepository;
+import com.friendbook.exception.PostNotFoundException;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.friendbook.likes.PostLikeRepository;
 import com.friendbook.user.User;
-import com.friendbook.user.UserFeedPostsDTO;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -44,37 +49,47 @@ public class PostService {
 
 	public List<PostResponseDTO> getPostByUserId(Long id) {
 		List<Post> posts = postRepository.findByUser_UserId(id)
-				.orElseThrow(() -> new RuntimeException("No Posts Available!"));
-		return postResponseMapper(posts, id);
-
-	}
-
-	private List<PostResponseDTO> postResponseMapper(List<Post> posts, Long userId) {
+				.orElseThrow(() -> new PostNotFoundException("No Posts Available!"));
 		List<PostResponseDTO> dtos = new ArrayList<>();
-
 		for (Post post : posts) {
-			PostResponseDTO dto = new PostResponseDTO();
-			dto.setCaption(post.getCaption());
-			dto.setImageUrl(post.getImageUrl());
-			dto.setPostId(post.getPostId());
-			dto.setLikeCount(postLikeRepository.countByPost_PostId(post.getPostId()));
-			dto.setLiked(postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, post.getPostId()));
-			dto.setUpdatedAt(post.getUpdatedAt());
-			dtos.add(dto);
+			dtos.add(postResponseMapper(post, id));
 		}
 		return dtos;
+
 	}
 
-	public UserFeedPostsDTO getFeedPosts(Long id) {
-		UserFeedPostsDTO dto = new UserFeedPostsDTO();
-		dto.setPosts(postResponseMapper(postRepository.findAll(), id));
+	private PostResponseDTO postResponseMapper(Post post, Long userId) {
+
+		PostResponseDTO dto = new PostResponseDTO();
+
+		dto.setCaption(post.getCaption());
+		dto.setImageUrl(post.getImageUrl());
+		dto.setPostId(post.getPostId());
+
+		dto.setLikeCount(postLikeRepository.countByPost_PostId(post.getPostId()));
+
+		dto.setLiked(postLikeRepository.existsByUser_UserIdAndPost_PostId(userId, post.getPostId()));
+
+		dto.setUpdatedAt(post.getUpdatedAt());
+
 		return dto;
+	}
+
+	public Page<PostResponseDTO> getFeedPosts(List<Long> followingIds, int page, int size, long userId) {
+
+		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+		if (followingIds.isEmpty()) {
+			return Page.empty(pageable);
+		}
+		Page<Post> posts = postRepository.findByUser_UserIdIn(followingIds, pageable);
+
+		return posts.map(post -> postResponseMapper(post, userId));
 	}
 
 	@Transactional
 	public void deletePostById(Long id, User user) throws IOException {
-		System.out.println("Deleting post: " + id);
-		Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post Not Found"));
+		Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post Not Found"));
 		if (!post.getUser().getUserId().equals(user.getUserId())) {
 			throw new RuntimeException("Not Authorized to delete the post!");
 		}
@@ -86,7 +101,7 @@ public class PostService {
 	}
 
 	public void updatePostCaption(Long id, User user, UpdatePostRequestDTO dto) {
-		Post post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post Not Found"));
+		Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post Not Found"));
 		if (post.getUser().getUserId() != user.getUserId()) {
 			throw new RuntimeException("Not Authorized to delete the post!");
 		}
@@ -95,7 +110,7 @@ public class PostService {
 	}
 
 	public Post getPostById(Long postId) {
-		return postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post Not Found!"));
+		return postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post Not Found!"));
 	}
 
 }

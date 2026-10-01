@@ -4,10 +4,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.friendbook.exception.ResourceAlreadyExistsException;
+import com.friendbook.exception.ResourceNotFoundException;
+import com.friendbook.exception.UserNotFoundException;
 import com.friendbook.follow.FollowRepository;
 import com.friendbook.follow.FollowStatus;
 import com.friendbook.posts.CloudinaryService;
@@ -29,7 +33,7 @@ public class UserService {
 
 	public void registerUser(UserRegisterRequestDTO requestDTO) {
 		if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
-			throw new RuntimeException("User Already Exists!");
+			throw new ResourceAlreadyExistsException("User Already Exists!");
 		}
 		User user = userMapper(requestDTO);
 		userRepository.save(user);
@@ -55,7 +59,7 @@ public class UserService {
 
 	public UserProfileResponseDTO getUserByUserName(String userName) {
 		User user = userRepository.findByUserName(userName)
-				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		UserProfileResponseDTO dto = new UserProfileResponseDTO();
 		dto.setEmail(user.getEmail());
 		dto.setGender(user.getGender());
@@ -72,8 +76,9 @@ public class UserService {
 		return dto;
 	}
 
-	public UserFeedPostsDTO getFeedPosts(User user) {
-		return postService.getFeedPosts(user.getUserId());
+	public Page<PostResponseDTO> getFeedPosts(User user, int page, int size) {
+		List<Long> followingIds = userRepository.findFollowingUserIds(user.getUserId());
+		return postService.getFeedPosts(followingIds, page, size, user.getUserId());
 	}
 
 	public void editProfile(UserProfileEditRequestDTO editRequestDTO, User user) {
@@ -105,7 +110,7 @@ public class UserService {
 		long followingCount = followRepository.countByFollowing_UserIdAndStatus(user.getUserId(),
 				FollowStatus.ACCEPTED);
 		if (!user.isActiveStatus() || user.getAccountStatus() == AccountStatus.BLOCKED) {
-			throw new IllegalArgumentException("Account unavailable");
+			throw new ResourceNotFoundException("Account unavailable");
 		}
 
 		List<PostResponseDTO> posts = new ArrayList<>();

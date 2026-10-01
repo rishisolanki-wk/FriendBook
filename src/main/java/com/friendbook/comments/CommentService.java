@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.friendbook.exception.PostNotFoundException;
+import com.friendbook.exception.ResourceNotFoundException;
 import com.friendbook.notifications.NotificationService;
 import com.friendbook.notifications.NotificationType;
 import com.friendbook.posts.Post;
@@ -26,7 +28,7 @@ public class CommentService {
 		if (commentRepository.existsByUser_UserIdAndPost_PostId(user.getUserId(), postId)) {
 			return;
 		}
-		Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post Not Found!"));
+		Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post Not Found!"));
 		Comment comment = new Comment();
 		comment.setCommentMsg(commentRequestDTO.getComment());
 		comment.setCreatedAt(LocalDateTime.now());
@@ -38,7 +40,7 @@ public class CommentService {
 
 	public List<CommentResponseDTO> getCommentsByPostId(Long postId) {
 		List<Comment> comments = commentRepository.findByPost_PostId(postId)
-				.orElseThrow(() -> new RuntimeException("Post Not Found!"));
+				.orElseThrow(() -> new PostNotFoundException("Post Not Found!"));
 		return commentMapper(comments);
 	}
 
@@ -58,7 +60,7 @@ public class CommentService {
 
 	public void removeCommentById(Long commentId, User user) {
 		Comment comment = commentRepository.findById(commentId)
-				.orElseThrow(() -> new RuntimeException("Comment Not Found!"));
+				.orElseThrow(() -> new ResourceNotFoundException("Comment Not Found!"));
 		if (!comment.getUser().getUserId().equals(user.getUserId())) {
 			return;
 		}

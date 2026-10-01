@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.friendbook.exception.PostNotFoundException;
 import com.friendbook.notifications.NotificationService;
 import com.friendbook.notifications.NotificationType;
 import com.friendbook.posts.Post;
@@ -23,7 +24,7 @@ public class PostLikeService {
 	private final NotificationService notificationService;
 
 	public void addPostLike(Long postId, User user) {
-		Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post Not Found!"));
+		Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post Not Found!"));
 		if (postLikeRepo.existsByUser_UserIdAndPost_PostId(user.getUserId(), postId)) {
 			return;
 		}
@@ -37,7 +38,7 @@ public class PostLikeService {
 
 	@Transactional
 	public void unlikePost(Long postId, User user) {
-		Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("Post Not Found!"));
+		Post post = postRepository.findById(postId).orElseThrow(() -> new PostNotFoundException("Post Not Found!"));
 		postLikeRepo.deleteByUserAndPost(user, post);
 	}
 

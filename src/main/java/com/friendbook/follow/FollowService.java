@@ -7,6 +7,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.friendbook.exception.InvalidException;
+import com.friendbook.exception.ResourceAlreadyExistsException;
+import com.friendbook.exception.ResourceNotFoundException;
+import com.friendbook.exception.UserNotFoundException;
 import com.friendbook.notifications.NotificationService;
 import com.friendbook.notifications.NotificationType;
 import com.friendbook.user.AccountStatus;
@@ -28,14 +32,14 @@ public class FollowService {
 	public String followUserRequest(Long toId, User fromUser) {
 
 		User followingUser = userRepository.findById(toId)
-				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
 
 		if (fromUser.getUserId().equals(toId)) {
-			throw new RuntimeException("Cannot follow yourself");
+			throw new InvalidException("Cannot follow yourself");
 		}
 
 		if (followRepository.existsByFollower_UserIdAndFollowing_UserId(fromUser.getUserId(), toId)) {
-			throw new RuntimeException("Already followed or requested");
+			throw new ResourceAlreadyExistsException("Already followed or requested");
 		}
 
 		Follow follow = new Follow();
@@ -83,7 +87,7 @@ public class FollowService {
 	@Transactional
 	public String unfollowUserById(Long toId, User fromUser) {
 		User followingUser = userRepository.findById(toId)
-				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		followRepository.deleteByFollower_UserIdAndFollowing_UserId(fromUser.getUserId(), followingUser.getUserId());
 		return "Unfollowed";
 	}
@@ -103,12 +107,13 @@ public class FollowService {
 	@Transactional
 	public String markStatusToFollowRequest(Long followerId, User currentUser, boolean isAccepted) {
 
-		Follow follow = followRepository.findByFollower_UserIdAndFollowing_UserIdAndStatus(followerId,
-				currentUser.getUserId(), FollowStatus.PENDING)
-				.orElseThrow(() -> new RuntimeException("Pending request not found"));
+		Follow follow = followRepository
+				.findByFollower_UserIdAndFollowing_UserIdAndStatus(followerId, currentUser.getUserId(),
+						FollowStatus.PENDING)
+				.orElseThrow(() -> new ResourceNotFoundException("Pending request not found"));
 
 		User recipient = userRepository.findById(followerId)
-				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		if (isAccepted) {
 			follow.setStatus(FollowStatus.ACCEPTED);
 			notificationService.createNotification(recipient, currentUser, NotificationType.FOLLOW_ACCEPTED, null);

@@ -23,6 +23,10 @@ public class NotificationService {
 
 	public List<NotificationResponseDTO> getAllNewUserNotifications(Long userId) {
 		List<Notification> notifications = notificationRepository.findByRecipient_UserIdAndIsRead(userId, false);
+		for (Notification notification : notifications) {
+			notification.setRead(true);
+			notificationRepository.save(notification);
+		}
 		return notificationResponseMapper(notifications);
 	}
 
