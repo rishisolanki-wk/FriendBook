@@ -31,9 +31,9 @@ public class UserService {
 	private final CloudinaryService cloudinaryService;
 	private final FollowRepository followRepository;
 
-	public void registerUser(UserRegisterRequestDTO requestDTO) {
+	public void registerUser(UserRegisterRequestDTO requestDTO) throws ResourceAlreadyExistsException {
 		if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
-			throw new ResourceAlreadyExistsException("User Already Exists!");
+			throw new ResourceAlreadyExistsException("Email Already Exists!");
 		}
 		User user = userMapper(requestDTO);
 		userRepository.save(user);

@@ -5,6 +5,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.friendbook.exception.InvalidException;
 import com.friendbook.user.User;
 import com.friendbook.user.UserLoginRequestDTO;
 import com.friendbook.user.UserLoginResponseDTO;
@@ -19,6 +20,10 @@ public class AuthService {
 	private final AuthUtils authUtils;
 
 	public UserLoginResponseDTO loginRequest(UserLoginRequestDTO requestDTO) {
+
+		if (requestDTO == null || requestDTO.getPassword() == null || requestDTO.getUserNameOrEmail() == null) {
+			throw new InvalidException("Invalid Credentials!");
+		}
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(requestDTO.getUserNameOrEmail(), requestDTO.getPassword()));
 		CustomUserPrincipal principal = (CustomUserPrincipal) authentication.getPrincipal();
