@@ -10,6 +10,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class PublicProfileViewDTO {
+	public PublicProfileViewDTO() {
+	}
+
 	private Long userId;
 	private String userName;
 	private String firstName;

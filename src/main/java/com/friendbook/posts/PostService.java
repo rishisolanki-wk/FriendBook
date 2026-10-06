@@ -102,7 +102,7 @@ public class PostService {
 
 	public void updatePostCaption(Long id, User user, UpdatePostRequestDTO dto) {
 		Post post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException("Post Not Found"));
-		if (post.getUser().getUserId() != user.getUserId()) {
+		if (!post.getUser().getUserId().equals(user.getUserId())) {
 			throw new RuntimeException("Not Authorized to delete the post!");
 		}
 		post.setCaption(dto.getCaption());
